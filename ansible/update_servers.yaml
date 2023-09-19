@@ -1,0 +1,23 @@
+# ansible-playbook update_servers.yml
+---
+- name: Update and Upgrade Servers
+  hosts: all
+  gather_facts: no
+  become: yes  # This allows the playbook to run commands with sudo privileges
+
+  tasks:
+    - name: Read the list of server IPs from servers.txt
+      slurp:
+        src: servers.txt
+      register: server_ips
+
+    - name: Extract server IPs
+      set_fact:
+        server_ip_list: "{{ (server_ips['content'] | b64decode).split('\n') }}"
+
+    - name: Update and Upgrade servers
+      apt:
+        upgrade: yes
+        update_cache: yes
+      when: server_ip_list is defined
+
